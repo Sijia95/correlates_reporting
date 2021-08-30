@@ -121,7 +121,7 @@ standard = function(data){
 ### Covariate-adjusted estimates  under BIP design are presented in row 2.
 ### Standard errors are computed by bootstrapping
 
-condVE = function(data,nseeds=10,weightX=rep(1,nrow(data)),weightW=rep(1,nrow(data)),weightX.adjust=rep(1,nrow(data)),weightW.adjust=rep(1,nrow(data))){
+condVE = function(data,nseeds=1,weightX=rep(1,nrow(data)),weightW=rep(1,nrow(data)),weightX.adjust=rep(1,nrow(data)),weightW.adjust=rep(1,nrow(data))){
   
   ### read in data 
   n = nrow(data)
@@ -367,7 +367,7 @@ phase1.name = "ph1.D29"
 treat = "Trt"
 biomarkerlist =c("Day29bindSpike","Day29bindRBD","Day29bindN","Day29liveneutmn50")
 
-for (i in 1:length(biomarkerlist)){
+for (i in 1:1){
   biomarker = biomarkerlist[i]
   data = Preprocess(dat.mock,precision,BIP,treat,biomarker,event.name,phase1.name,baselineSero,casecontrolWeights,as.numeric(args))
   data = standard(data)
@@ -386,18 +386,18 @@ for (i in 1:length(biomarkerlist)){
                 "number of levels of BIP" = args)
   save(params, file=paste0(save.results.to, "parameters_info_"%.%study_name%.%".rda"))
   save(results, file=paste0(here::here("output"), "/", biomarker,"/cop_prinstrat_covariateAdjusted_condVE_BIP_",args,"."%.%study_name%.%".rda"))
-  ### save bootstrapped standard errors: # of replications  = 500
-  cores = detectCores()
+  ### save bootstrapped standard errors: # of replications  = 5
+  cores = 2
   print(paste0("running bootstrap using ", cores," cores"))
-  bootresults = mclapply(1:500,function(i){condVE.boot(i,data)},mc.cores = cores)
-  additiveVE = lapply(1:500,function(i){bootresults[[i]]$AdditiveVE})
-  multiplicativeVE = lapply(1:500,function(i){bootresults[[i]]$MultiplicativeVE})
+  bootresults = mclapply(1:5,function(i){condVE.boot(i,data)},mc.cores = 2)
+  additiveVE = lapply(1:5,function(i){bootresults[[i]]$AdditiveVE})
+  multiplicativeVE = lapply(1:5,function(i){bootresults[[i]]$MultiplicativeVE})
   
   print(paste0("save.bootstrap.results.to equals ", save.results.to))
   out.additiveVE = getsd("additive")
-  out.multiplicativeVE = getsd("multiplicative")
+  # out.multiplicativeVE = getsd("multiplicative")
   save(out.additiveVE, file=paste0(here::here("output"), "/", biomarker,"/cop_prinstrat_covariateAdjusted_condVE_additiveStd_BIP_",args,"."%.%study_name%.%".rda"))
-  save(out.multiplicativeVE, file=paste0(here::here("output"), "/", biomarker,"/cop_prinstrat_covariateAdjusted_condVE_MultiplicativeStd_BIP_",args,"."%.%study_name%.%".rda"))
+  # save(out.multiplicativeVE, file=paste0(here::here("output"), "/", biomarker,"/cop_prinstrat_covariateAdjusted_condVE_MultiplicativeStd_BIP_",args,"."%.%study_name%.%".rda"))
   
 }
 
